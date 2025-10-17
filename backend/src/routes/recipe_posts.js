@@ -3,6 +3,9 @@ import {
   listRecipesByAuthor,
   listRecipesByTag,
   getRecipeById,
+  createRecipe,
+  updateRecipe,
+  deleteRecipe
 } from '../services/recipe_posts.js'
 export function recipesRoutes(app) {
   app.get('/api/v1/recipes', async (req, res) => {
@@ -36,4 +39,33 @@ export function recipesRoutes(app) {
       return res.status(500).end()
     }
   })
+  app.post('/api/v1/recipes', async (req, res) => {
+    try {
+      const recipe = await createRecipe(req.body)
+      return res.json(recipe)
+    } catch (err) {
+      console.error('error creating recipe', err)
+      return res.status(500).end()
+    }
+  })
+  app.patch('/api/v1/recipes/:id', async (req, res) => {
+    try {
+      const recipe = await updateRecipe(req.params.id, req.body)
+      return res.json(recipe)
+    } catch (err) {
+      console.error('error updating recipe', err)
+      return res.status(500).end()
+    }
+  })
+  app.delete('/api/v1/recipes/:id', async (req, res) => {
+    try {
+      const { deletedCount } = await deleteRecipe(req.params.id)
+      if (deletedCount === 0) return res.sendStatus(404)
+      return res.status(204).end()
+    } catch (err) {
+      console.error('error deleting post', err)
+      return res.status(500).end()
+    }
+  })
+
 }
