@@ -16,7 +16,7 @@ const recipeSchema = new Schema(
       required: false,
     },
     author: {
-      type: String,
+      type: Schema.Types.ObjectId, ref: 'user',
       required: true,
     },
     tags: [
