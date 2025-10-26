@@ -1,15 +1,16 @@
 import { useMutation } from '@tanstack/react-query'
 import { createRecipe } from '../api/getRecipes.js'
 import { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext.jsx'
 export function CreateRecipe() {
   const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
+  const [token] = useAuth()
   const [ingredients, setIngredients] = useState([])
   const [steps, setSteps] = useState([])
   const [ingredientInput, setIngredientInput] = useState('')
   const [stepInput, setStepInput] = useState('')
   const createRecipeMutation = useMutation({
-    mutationFn: () => createRecipe({ title, author, ingredients, steps })
+    mutationFn: () => createRecipe(token, { title, ingredients, steps })
   })
   const handleAddIngredient = () => {
     if (ingredientInput.trim()) {
@@ -28,6 +29,7 @@ export function CreateRecipe() {
     e.preventDefault()
     createRecipeMutation.mutate()
   }
+  if (!token) return <div>Please log in to create new posts.</div>
 
   return (
     <form onSubmit={handleSubmit}>
@@ -42,16 +44,6 @@ export function CreateRecipe() {
         />
       </div>
       <br />
-      <div>
-        <label htmlFor='create_author'>Author: </label>
-        <input 
-        type='text' 
-        name='create-author' 
-        id='create_author'
-        value={author}
-        onChange={(e) => setAuthor(e.target.value)}
-        />
-      </div>
       <div>
         <label htmlFor='create-ingredients'>Ingredients: </label>
         <input

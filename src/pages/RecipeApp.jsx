@@ -19,11 +19,12 @@ export function RecipeApp() {
 
   return (
     <div style={{ padding: 8 }}>
+      <br />
+      <h2>Welcome to my Recipe-Sharing App!</h2>
+      <br />
       <Header />
       <br />
       <hr />
-      <br />
-      <h1>Welcome to my Recipe-Sharing App!</h1>
       <CreateRecipe />
       <br />
       <hr />
