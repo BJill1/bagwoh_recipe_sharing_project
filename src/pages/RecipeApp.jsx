@@ -1,10 +1,11 @@
-import { CreateRecipe } from './components/CreateRecipe.jsx'
-import { RecipeFilter } from './components/RecipeFilter.jsx'
-import { RecipeSorting } from './components/RecipeSorting.jsx'
-import { RecipeList } from './components/RecipeList.jsx'
+import { CreateRecipe } from '../components/CreateRecipe.jsx'
+import { RecipeFilter } from '../components/RecipeFilter.jsx'
+import { RecipeSorting } from '../components/RecipeSorting.jsx'
+import { RecipeList } from '../components/RecipeList.jsx'
 import { useQuery } from '@tanstack/react-query'
-import { getRecipes } from './api/getRecipes.js'
+import { getRecipes } from '../api/getRecipes.js'
 import { useState } from 'react'
+import { Header } from '../components/Header.jsx'
 
 export function RecipeApp() {
   const [author, setAuthor] = useState('')
@@ -18,18 +19,23 @@ export function RecipeApp() {
 
   return (
     <div style={{ padding: 8 }}>
+      <Header />
+      <br />
+      <hr />
+      <br />
+      <h1>Welcome to my Recipe-Sharing App!</h1>
       <CreateRecipe />
       <br />
       <hr />
       Filter by:
-      <RecipeFilter 
+      <RecipeFilter
         field='author'
         value={author}
         onChange={(value) => setAuthor(value)}
       />
       <br />
-      <RecipeSorting 
-        fields={['createdAt', 'updatedAt']} 
+      <RecipeSorting
+        fields={['createdAt', 'updatedAt']}
         value={sortBy}
         onChange={(value) => setSortBy(value)}
         orderValue={sortOrder}
@@ -40,5 +46,3 @@ export function RecipeApp() {
     </div>
   )
 }
-
-    
