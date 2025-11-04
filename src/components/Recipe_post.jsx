@@ -1,19 +1,29 @@
-
 import PropTypes from 'prop-types'
 import { User } from './User.jsx'
-export function Recipe({ title, author, ingredients, steps }) {
+
+export function Recipe({ title, author, ingredients, steps, imageUrl }) {
   return (
-    <div>
-      <h2>{title}</h2>
-      <p><strong>{ author && (
-        <em>
-          <br/>
-          Written by <User id={author} />
-        </em>
+    <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '15px', marginBottom: '20px' }}>
+      
+      {/* ✅ Display image if available */}
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt={title}
+          style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '8px', marginBottom: '15px' }}
+          onError={(e) => (e.target.style.display = 'none')} // hides broken images
+        />
       )}
-      </strong>
-      </p>
-      <hr/>
+
+      <h2>{title}</h2>
+
+      {author && (
+        <p style={{ fontStyle: 'italic' }}>
+          Written by <User id={author} />
+        </p>
+      )}
+
+      <hr />
 
       <h3>Ingredients:</h3>
       <ul>
@@ -21,7 +31,8 @@ export function Recipe({ title, author, ingredients, steps }) {
           <li key={index}>{ingredient}</li>
         ))}
       </ul>
-      <hr/>
+
+      <hr />
 
       <h3>Steps:</h3>
       <ol>
@@ -30,13 +41,14 @@ export function Recipe({ title, author, ingredients, steps }) {
         ))}
       </ol>
     </div>
-  );
+  )
 }
 
 // PropTypes for validation
 Recipe.propTypes = {
   title: PropTypes.string.isRequired,
-  author: PropTypes.string.isRequired,
+  author: PropTypes.string,
   ingredients: PropTypes.arrayOf(PropTypes.string).isRequired,
   steps: PropTypes.arrayOf(PropTypes.string).isRequired,
-};
+  imageUrl: PropTypes.string, // ✅ add this
+}

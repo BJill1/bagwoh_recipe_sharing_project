@@ -1,7 +1,7 @@
 import { Recipe } from '../db/models/recipe_posts.js'
 import { User } from '../db/models/user.js'
-export async function createRecipe(userId, {title, description, ingredients, steps, tags}){
-    const newRecipe = new Recipe({ title, description, ingredients, steps, author: userId, tags })
+export async function createRecipe(userId, {title, description, ingredients, steps, tags, imageUrl }){
+    const newRecipe = new Recipe({ title, description, ingredients, steps, author: userId, tags, imageUrl })
     return await newRecipe.save()
 } 
     

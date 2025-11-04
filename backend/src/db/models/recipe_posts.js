@@ -5,6 +5,7 @@ const { Schema } = mongoose
 const recipeSchema = new Schema(
   {
     title: { type: String, required: true, maxlength: 100,},
+    imageUrl: { type: String },
     ingredients: {
         type: [String], required: true 
       },
