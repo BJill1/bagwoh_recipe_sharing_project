@@ -8,12 +8,12 @@ import {
   deleteRecipe
 } from '../services/recipe_posts.js'
 import { requireAuth } from '/workspaces/bagwoh_recipe_sharing_project/backend/middleware/jwt.js'
-import Like from '../db/models/like.js'  // import Like model
+import Like from '../db/models/like.js'
 import mongoose from 'mongoose'
 
 export function recipesRoutes(app) {
 
-  // Helper to attach likes count to recipe(s)
+  // Helper: attach likes count to recipes
   async function attachLikes(recipes) {
     return await Promise.all(
       recipes.map(async (recipe) => {
@@ -23,34 +23,47 @@ export function recipesRoutes(app) {
     )
   }
 
+  // List recipes with optional sorting & filtering
   app.get('/api/v1/recipes', async (req, res) => {
-    const { sortBy, sortOrder, author, tag } = req.query
-    const options = { sortBy, sortOrder }
+    const { sortBy = 'createdAt', sortOrder = 'descending', author, tag } = req.query
+    const sortMultiplier = sortOrder === 'ascending' ? 1 : -1
 
     try {
       let recipes
 
       if (author && tag) {
-        return res
-          .status(400)
-          .json({ error: 'query by either author or tag, not both' })
+        return res.status(400).json({ error: 'query by either author or tag, not both' })
       } else if (author) {
-        recipes = await listRecipesByAuthor(author, options)
+        recipes = await listRecipesByAuthor(author)
       } else if (tag) {
-        recipes = await listRecipesByTag(tag, options)
+        recipes = await listRecipesByTag(tag)
       } else {
-        recipes = await listAllRecipes(options)
+        recipes = await listAllRecipes()
       }
 
       const recipesWithLikes = await attachLikes(recipes)
+
+      // Sort by likes if requested
+      if (sortBy === 'likes') {
+        recipesWithLikes.sort((a, b) => (a.likes - b.likes) * sortMultiplier)
+      } else {
+        // Sort by any Recipe field
+        recipesWithLikes.sort((a, b) => {
+          if (a[sortBy] < b[sortBy]) return -1 * sortMultiplier
+          if (a[sortBy] > b[sortBy]) return 1 * sortMultiplier
+          return 0
+        })
+      }
+
       return res.json(recipesWithLikes)
 
     } catch (err) {
-      console.error('error listing recipes', err)
+      console.error('Error listing recipes:', err)
       return res.status(500).end()
     }
   })
 
+  // Get a single recipe
   app.get('/api/v1/recipes/:id', async (req, res) => {
     const { id } = req.params
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -65,21 +78,23 @@ export function recipesRoutes(app) {
       return res.json({ ...recipe.toObject(), likes: Number(likesCount) || 0 })
 
     } catch (err) {
-      console.error('error getting post', err)
+      console.error('Error getting recipe:', err)
       return res.status(500).end()
     }
   })
 
+  // Create a recipe
   app.post('/api/v1/recipes', requireAuth, async (req, res) => {
     try {
       const recipe = await createRecipe(req.auth.sub, req.body)
-      return res.json({ ...recipe.toObject(), likes: 0 }) // new recipe starts with 0 likes
+      return res.status(201).json({ ...recipe.toObject(), likes: 0 })
     } catch (err) {
-      console.error('error creating recipe', err)
+      console.error('Error creating recipe:', err)
       return res.status(500).end()
     }
   })
 
+  // Update a recipe
   app.patch('/api/v1/recipes/:id', requireAuth, async (req, res) => {
     try {
       const recipe = await updateRecipe(req.auth.sub, req.params.id, req.body)
@@ -88,18 +103,19 @@ export function recipesRoutes(app) {
       const likesCount = await Like.countDocuments({ recipe: req.params.id })
       return res.json({ ...recipe.toObject(), likes: Number(likesCount) || 0 })
     } catch (err) {
-      console.error('error updating recipe', err)
+      console.error('Error updating recipe:', err)
       return res.status(500).end()
     }
   })
 
+  // Delete a recipe
   app.delete('/api/v1/recipes/:id', requireAuth, async (req, res) => {
     try {
       const { deletedCount } = await deleteRecipe(req.auth.sub, req.params.id)
       if (deletedCount === 0) return res.sendStatus(404)
       return res.status(204).end()
     } catch (err) {
-      console.error('error deleting post', err)
+      console.error('Error deleting recipe:', err)
       return res.status(500).end()
     }
   })
