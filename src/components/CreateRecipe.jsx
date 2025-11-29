@@ -51,17 +51,39 @@ export function CreateRecipe() {
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       <form onSubmit={handleSubmit}>
         <h2>Create a New Recipe</h2>
-        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" required />
-        <input type="text" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Image URL" required />
-        
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Title"
+          required
+        />
+        <input
+          type="text"
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
+          placeholder="Image URL"
+          required
+        />
+
         <div>
-          <input type="text" value={ingredientInput} onChange={(e) => setIngredientInput(e.target.value)} placeholder="Add ingredient" />
+          <input
+            type="text"
+            value={ingredientInput}
+            onChange={(e) => setIngredientInput(e.target.value)}
+            placeholder="Add ingredient"
+          />
           <button type="button" onClick={handleAddIngredient}>Add</button>
           <ul>{ingredients.map((i, idx) => <li key={idx}>{i}</li>)}</ul>
         </div>
 
         <div>
-          <input type="text" value={stepInput} onChange={(e) => setStepInput(e.target.value)} placeholder="Add step" />
+          <input
+            type="text"
+            value={stepInput}
+            onChange={(e) => setStepInput(e.target.value)}
+            placeholder="Add step"
+          />
           <button type="button" onClick={handleAddStep}>Add</button>
           <ol>{steps.map((s, idx) => <li key={idx}>{s}</li>)}</ol>
         </div>
@@ -71,7 +93,10 @@ export function CreateRecipe() {
         </button>
       </form>
 
-      {createdRecipe && <Recipe {...createdRecipe} token={token} />}
+      {/* Pass the MongoDB _id as id to Recipe */}
+      {createdRecipe && createdRecipe._id && (
+        <Recipe {...createdRecipe} id={createdRecipe._id} token={token} />
+      )}
     </div>
   )
 }

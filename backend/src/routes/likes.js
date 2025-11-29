@@ -7,34 +7,23 @@ export function likeRoutes(app) {
   // Like a recipe
   app.post('/api/v1/recipes/:recipeId/like', requireAuth, async (req, res) => {
     try {
-      const recipeId = req.params.recipeId
+      const { recipeId } = req.params
       const userId = req.auth.sub
 
-      console.log('Trying to like recipe:', recipeId, 'by user:', userId)
-
-      // Validate ObjectId
       if (!mongoose.Types.ObjectId.isValid(recipeId) || !mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ message: 'Invalid recipeId or userId' })
       }
 
-      // Prevent duplicate like
-      const existingLike = await Like.findOne({
-        recipe: recipeId,
-        user: userId,
-      })
-      console.log('Existing like:', existingLike)
+      const existingLike = await Like.findOne({ recipe: recipeId, user: userId })
+      if (existingLike) return res.status(400).json({ message: 'Already liked' })
 
-      if (existingLike) {
-        return res.status(400).json({ message: 'You already liked this recipe' })
-      }
+      await Like.create({ recipe: recipeId, user: userId })
 
-      const like = await Like.create({
-        recipe: recipeId,
-        user: userId,
-      })
-      return res.status(201).json({ message: 'Recipe liked', like })
+      const likesCount = await Like.countDocuments({ recipe: recipeId })
+      return res.status(201).json({ likes: likesCount })
+
     } catch (err) {
-      console.error('Error in like route:', err)
+      console.error('Error liking recipe:', err)
       return res.status(500).json({ error: err.message })
     }
   })
@@ -42,27 +31,21 @@ export function likeRoutes(app) {
   // Unlike a recipe
   app.post('/api/v1/recipes/:recipeId/unlike', requireAuth, async (req, res) => {
     try {
-      const recipeId = req.params.recipeId
+      const { recipeId } = req.params
       const userId = req.auth.sub
-
-      console.log('Trying to unlike recipe:', recipeId, 'by user:', userId)
 
       if (!mongoose.Types.ObjectId.isValid(recipeId) || !mongoose.Types.ObjectId.isValid(userId)) {
         return res.status(400).json({ message: 'Invalid recipeId or userId' })
       }
 
-      const deleted = await Like.findOneAndDelete({
-        recipe: recipeId,
-        user: userId,
-      })
+      const deleted = await Like.findOneAndDelete({ recipe: recipeId, user: userId })
+      if (!deleted) return res.status(400).json({ message: "You haven't liked this recipe" })
 
-      if (!deleted) {
-        return res.status(400).json({ message: "You haven't liked this recipe yet" })
-      }
+      const likesCount = await Like.countDocuments({ recipe: recipeId })
+      return res.status(200).json({ likes: likesCount })
 
-      return res.status(200).json({ message: 'Recipe unliked' })
     } catch (err) {
-      console.error('Error in unlike route:', err)
+      console.error('Error unliking recipe:', err)
       return res.status(500).json({ error: err.message })
     }
   })
@@ -70,17 +53,55 @@ export function likeRoutes(app) {
   // Get like count for a recipe
   app.get('/api/v1/recipes/:recipeId/likes', async (req, res) => {
     try {
-      const recipeId = req.params.recipeId
+      const { recipeId } = req.params
 
       if (!mongoose.Types.ObjectId.isValid(recipeId)) {
         return res.status(400).json({ message: 'Invalid recipeId' })
       }
 
-      const count = await Like.countDocuments({ recipe: recipeId })
-      return res.status(200).json({ recipeId, likes: count })
+      const likesCount = await Like.countDocuments({ recipe: recipeId })
+      return res.status(200).json({ likes: likesCount })
+
     } catch (err) {
-      console.error('Error in get likes route:', err)
+      console.error('Error fetching likes:', err)
       return res.status(500).json({ error: err.message })
     }
   })
+  // Check if current user liked a recipe
+app.get('/api/v1/recipes/:recipeId/liked', requireAuth, async (req, res) => {
+  try {
+    const { recipeId } = req.params
+    const userId = req.auth.sub
+
+    if (!mongoose.Types.ObjectId.isValid(recipeId) || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid recipeId or userId' })
+    }
+
+    const like = await Like.findOne({ recipe: recipeId, user: userId })
+    return res.status(200).json({ liked: !!like })
+
+  } catch (err) {
+    console.error('Error checking if user liked recipe:', err)
+    return res.status(500).json({ error: err.message })
+  }
+})
+// Check if current user liked a recipe
+app.get('/api/v1/recipes/:recipeId/liked', requireAuth, async (req, res) => {
+  try {
+    const { recipeId } = req.params
+    const userId = req.auth.sub
+
+    if (!mongoose.Types.ObjectId.isValid(recipeId) || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid recipeId or userId' })
+    }
+
+    const like = await Like.findOne({ recipe: recipeId, user: userId })
+    return res.status(200).json({ liked: !!like })
+
+  } catch (err) {
+    console.error('Error checking if user liked recipe:', err)
+    return res.status(500).json({ error: err.message })
+  }
+})
+
 }

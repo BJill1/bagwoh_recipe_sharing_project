@@ -7,10 +7,15 @@ export function RecipeList({ recipes = [], token }) {
     <div>
       {recipes.map((recipe) => (
         <Fragment key={recipe._id}>
-          <Recipe {...recipe} token={token} />
+          <Recipe {...recipe} id={recipe._id} token={token} />
           <hr color="blue" size="4" />
         </Fragment>
       ))}
     </div>
   )
+}
+
+RecipeList.propTypes = {
+  recipes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  token: PropTypes.string,
 }
