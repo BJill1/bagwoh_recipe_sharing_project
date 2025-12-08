@@ -6,6 +6,7 @@ import bodyParser from 'body-parser'
 import { likeRoutes } from './routes/likes.js'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
+import { handleSocket } from './socket.js'
 
 
 const app = express()
@@ -23,11 +24,6 @@ const io = new Server(server, {
     origin: '*',
   },
 })
-io.on('connection', (socket) => {
-  console.log('user connected:', socket.id)
-  socket.on('disconnect', () => {
-    console.log('user disconnected:', socket.id)
-  })
-})
+handleSocket(io)
 export { server as app }
 
