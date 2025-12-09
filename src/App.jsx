@@ -1,16 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { RecipeApp } from './pages/RecipeApp.jsx'
+//import { RecipeApp } from './pages/RecipeApp.jsx'
+import { Chat } from './pages/Chat.jsx'
 import { Signup } from './pages/Signup.jsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { AuthContextProvider } from './contexts/AuthContext.jsx'
 import { Login } from './pages/Login.jsx'
-import { io } from 'socket.io-client'
-const socket = io(import.meta.env.VITE_SOCKET_HOST)
+import { SocketIOContextProvider } from './contexts/SocketIOContext.jsx'
+
+
 const queryClient = new QueryClient()
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <RecipeApp />,
+    element: <Chat />,
   },
     {
     path: '/signup',
@@ -21,24 +23,14 @@ const router = createBrowserRouter([
     element: <Login />,
   },
 ])
-socket.on('connect', () => {
-  console.log('connected to socket.io as', socket.id)
-  socket.emit('chat.message', 'hello from client')
-})
-socket.on('connect_error', (err) => {
-  console.error('socket.io connect error:', err)
-})
-socket.on('chat.message', (msg) => {
-  console.log(`${msg.username}: ${msg.message}`)
-})
-
-
 
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthContextProvider>
-        <RouterProvider router={router} />
+        <SocketIOContextProvider>
+          <RouterProvider router={router} />
+        </SocketIOContextProvider>
       </AuthContextProvider>
     </QueryClientProvider>
   )
